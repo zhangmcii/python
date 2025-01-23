@@ -1,0 +1,81 @@
+from flask import Flask
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, cors_allowed_origins="*")  # 允许所有跨源请求
+CORS(app)
+
+
+
+@app.route('/')
+def index():
+    return 'Hello, Flask!'
+
+@socketio.on('message')
+def handle_message(data):
+    print('received message: ' + data)
+    emit('response', {'data': 'Message received'})
+
+if __name__ == '__main__':
+    socketio.run(app, host='0.0.0.0', debug=True,allow_unsafe_werkzeug=True )
+    
+    
+"""
+<template>
+  <div class="qa-session">
+    <h2>WebSocket QA</h2>
+    <form @submit.prevent="sendMessage">
+      <input v-model="message" placeholder="Ask your question here..." />
+      <button type="submit">Send</button>
+    </form>
+    <div v-if="response" class="response">
+      <p>Response from server: {{ response }}</p >
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue';
+import io from 'socket.io-client';
+
+export default {
+  name: 'QASession',
+
+  setup() {
+    const message = ref('');
+    const response = ref('');
+    let socket;
+
+    onMounted(() => {
+      socket = io('http://localhost:5000');
+
+      socket.on('response', (data) => {
+        response.value = data;
+      });
+    });
+
+    const sendMessage = () => {
+      if (message.value.trim() !== '') {
+        socket.emit('message', message.value);
+        message.value = ''; 
+      }
+    };
+
+    return {
+      response,
+      sendMessage,
+      message
+    };
+  },
+};
+</script>
+
+<style>
+.response {
+  margin-top: 20px;
+}
+</style>
+
+"""
